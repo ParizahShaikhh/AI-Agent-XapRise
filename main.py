@@ -6,7 +6,7 @@ API_URL = "https://crud-ai-agent.vercel.app/agent/"
 
 @cl.on_chat_start
 async def on_chat_start():
-    await cl.Message(content="👋 Welcome to the Xaprise AI Agent! Ask anything below.").send()
+    await cl.Message(content="👋 Welcome to the XapRise AI Agent! Ask anything below.").send()
 
 @cl.on_message
 async def on_message(message: cl.Message):
