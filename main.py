@@ -1,22 +1,36 @@
-import streamlit as st
+import chainlit as cl
 import requests
+import json
 
-st.set_page_config(page_title="Xaprise AI Agent Demo", layout="centered")
+API_URL = "https://crud-ai-agent.vercel.app/agent/"
 
-st.title("🤖 Xaprise AI Agent")
-st.subheader("Try chatting with our AI agent below")
+@cl.on_chat_start
+async def on_chat_start():
+    await cl.Message(content="👋 Welcome to the Xaprise AI Agent! Ask anything below.").send()
 
-user_input = st.text_input("Your Message")
+@cl.on_message
+async def on_message(message: cl.Message):
+    user_input = message.content
 
-if st.button("Send"):
-    if user_input:
-        with st.spinner("Thinking..."):
-            response = requests.post(
-                "https://api-link.com/agent/",  # Replace this with your real API
-                json={"user_input": user_input}
-            )
-            if response.status_code == 200:
-                st.success("Agent Reply:")
-                st.write(response.json().get("response", "No reply field in response."))
-            else:
-                st.error(f"Error: {response.status_code}")
+    try:
+        headers = {'Content-Type': 'application/json'}
+        payload = {"user_input": user_input}
+
+        response = requests.post(API_URL, data=json.dumps(payload), headers=headers)
+
+        print("RAW RESPONSE:", response.text)
+
+        if response.status_code == 200:
+            # Try parsing JSON
+            try:
+                data = response.json()
+                reply = str(data)
+            except Exception:
+                reply = response.text
+        else:
+            reply = f"❌ Error {response.status_code}:\n{response.text}"
+
+    except Exception as e:
+        reply = f"⚠️ Exception:\n{str(e)}"
+
+    await cl.Message(content=reply).send()
